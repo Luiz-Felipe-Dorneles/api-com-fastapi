@@ -26,7 +26,7 @@ CREATE TABLE `ator` (
   `id_ator` int NOT NULL AUTO_INCREMENT,
   `nome` varchar(100) NOT NULL,
   PRIMARY KEY (`id_ator`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -35,7 +35,7 @@ CREATE TABLE `ator` (
 
 LOCK TABLES `ator` WRITE;
 /*!40000 ALTER TABLE `ator` DISABLE KEYS */;
-INSERT INTO `ator` VALUES (1,'Millie Bobby Brown');
+INSERT INTO `ator` VALUES (1,'Millie Bobby Brown'),(2,'Tom Holland'),(3,'Tobey Maguire');
 /*!40000 ALTER TABLE `ator` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -47,13 +47,12 @@ DROP TABLE IF EXISTS `ator_serie`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ator_serie` (
-  `id_ator` int NOT NULL,
-  `id_serie` int NOT NULL,
-  `personagem` varchar(100) NOT NULL,
-  PRIMARY KEY (`id_ator`,`id_serie`),
-  KEY `id_serie_idx` (`id_serie`),
-  CONSTRAINT `id_autor` FOREIGN KEY (`id_ator`) REFERENCES `ator` (`id_ator`),
-  CONSTRAINT `id_serie` FOREIGN KEY (`id_serie`) REFERENCES `serie` (`id_serie`)
+  `id_ator` int DEFAULT NULL,
+  `id_serie` int DEFAULT NULL,
+  KEY `id_serie` (`id_serie`),
+  KEY `ator_serie_ibfk_1` (`id_ator`),
+  CONSTRAINT `ator_serie_ibfk_1` FOREIGN KEY (`id_ator`) REFERENCES `ator` (`id_ator`),
+  CONSTRAINT `ator_serie_ibfk_2` FOREIGN KEY (`id_serie`) REFERENCES `serie` (`id_serie`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -63,6 +62,7 @@ CREATE TABLE `ator_serie` (
 
 LOCK TABLES `ator_serie` WRITE;
 /*!40000 ALTER TABLE `ator_serie` DISABLE KEYS */;
+INSERT INTO `ator_serie` VALUES (1,2);
 /*!40000 ALTER TABLE `ator_serie` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -104,7 +104,7 @@ CREATE TABLE `categoria` (
   `id_categoria` int NOT NULL AUTO_INCREMENT,
   `nome_categoria` varchar(50) NOT NULL,
   PRIMARY KEY (`id_categoria`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,7 +113,7 @@ CREATE TABLE `categoria` (
 
 LOCK TABLES `categoria` WRITE;
 /*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
-INSERT INTO `categoria` VALUES (1,'Ação');
+INSERT INTO `categoria` VALUES (1,'Ação'),(2,'Terror');
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -180,4 +180,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-13  8:27:41
+-- Dump completed on 2025-05-20 13:49:22
