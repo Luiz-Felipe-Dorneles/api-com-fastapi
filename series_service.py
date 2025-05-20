@@ -5,6 +5,20 @@ class Series_service:
     def __init__(self):
         self.db = Database()
 
+    def executar_update(self, query, valores):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+            cursor.execute(query, valores)
+            conn.commit()
+            cursor.close()
+            self.db.desconectar()
+            return True, None
+        except Exception as e:
+            return False, str(e)
+
+
+
     def executar_select(self, query, params=None):
         conn = self.db.conectar()
         if not conn:
@@ -29,6 +43,19 @@ class Series_service:
         cursor.close()
         self.db.desconectar()
         return novo_id, None
+    
+    def executar_consulta(self, query, parametros=None):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute(query, parametros)
+            resultado = cursor.fetchall()
+            cursor.close()
+            self.db.desconectar()
+            return resultado, None
+        except Exception as e:
+            return None, str(e)
+
 
     def executar_sql(self, query, params=None):
         conn = self.db.conectar()
@@ -49,18 +76,18 @@ class Series_service:
 
         cursor = conn.cursor()
 
-        # Verifica se a categoria já existe
+        
         cursor.execute("SELECT idcategoria FROM categoria WHERE nome_categoria = %s", (nome_categoria,))
         resultado = cursor.fetchone()
         if resultado:
             idcategoria = resultado[0]
         else:
-            # Cria a categoria se não existir
+            
             cursor.execute("INSERT INTO categoria (nome_categoria) VALUES (%s)", (nome_categoria,))
             conn.commit()
             idcategoria = cursor.lastrowid
 
-        # Insere a série
+        
         cursor.execute("""
             INSERT INTO serie (titulo, descricao, ano_lancamento, idcategoria, idautor)
             VALUES (%s, %s, %s, %s, %s)
@@ -102,7 +129,22 @@ class Series_service:
         _, erro = self.executar_insert(query, (ator_id, idserie))
         if erro:
             return {"error": erro}
-        return {"mensagem": "Ator associado com sucesso à série"}
+        return {"mensagem": "Ator associado com sucesso à série"}   
+    
+    def listar_atores_por_serie(self, idserie):
+        query = """
+            SELECT a.id_ator, a.nome
+            FROM ator_serie ats
+            JOIN ator a ON ats.id_ator = a.id_ator
+            WHERE ats.id_serie = %s
+        """
+        resultados, erro = self.executar_consulta(query, (idserie,))
+        if erro:
+            return {"error": erro}
+        return resultados
+
+
+
 
 
 
