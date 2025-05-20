@@ -102,26 +102,103 @@ class Series_service:
         return {"id": nova_serie_id, "mensagem": "Série criada com sucesso"}
 
 
-    def deletar_serie(self, idserie):
-        query = "DELETE FROM serie WHERE idserie = %s"
-        _, erro = self.executar_insert(query, (idserie,))
-        if erro:
-            return {"error": erro}
-        return {"mensagem": "Série deletada com sucesso"}
-
-    def deletar_autor(self, idautor):
-        query = "DELETE FROM autor WHERE idautor = %s"
-        _, erro = self.executar_insert(query, (idautor,))
-        if erro:
-            return {"error": erro}
-        return {"mensagem": "Autor deletado com sucesso"}
     
-    def deletar_categoria(self, idcategoria):
-        query = "DELETE FROM categoria WHERE idcategoria = %s"
-        _, erro = self.executar_insert(query, (idcategoria,))
-        if erro:
-            return {"error": erro}
-        return {"mensagem": "Categoria deletada com sucesso"}
+    def deletar_serie(self, id_serie):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+
+            query = "DELETE FROM serie WHERE idserie = %s"
+            cursor.execute(query, (id_serie,))
+            conn.commit()
+
+            cursor.close()
+            self.db.desconectar()
+
+            if cursor.rowcount == 0:
+                return {"erro": "Série não encontrada"}
+            
+            return {"mensagem": "Série deletada com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+
+    def deletar_ator(self, id_ator):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+
+            query = "DELETE FROM ator WHERE id_ator = %s"
+            cursor.execute(query, (id_ator,))
+            conn.commit()
+
+            cursor.close()
+            self.db.desconectar()
+
+            if cursor.rowcount == 0:
+                return {"erro": "Ator não encontrado"}
+            
+            return {"mensagem": "Ator deletado com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+        
+
+    def deletar_categoria(self, id_categoria):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+
+            query = "DELETE FROM categoria WHERE id_categoria = %s"
+            cursor.execute(query, (id_categoria,))
+            conn.commit()
+
+            cursor.close()
+            self.db.desconectar()
+
+            if cursor.rowcount == 0:
+                return {"erro": "Categoria não encontrada"}
+            
+            return {"mensagem": "Categoria deletada com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+        
+
+    def deletar_motivo(self, id):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+
+            query = "DELETE FROM motivo_assistir WHERE id_motivo = %s"
+            cursor.execute(query, (id,))
+            conn.commit()
+
+            cursor.close()
+            self.db.desconectar()
+
+            if cursor.rowcount == 0:
+                return {"erro": "Motivo não encontrado"}
+            
+            return {"mensagem": "Motivo deletado com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+        
+    def deletar_avaliacao(self, id_avaliacao):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+
+            query = "DELETE FROM avaliacao WHERE id_avaliacao = %s"
+            cursor.execute(query, (id_avaliacao,))
+            conn.commit()
+
+            cursor.close()
+            self.db.desconectar()
+
+            if cursor.rowcount == 0:
+                return {"erro": "Avaliação não encontrada"}
+            
+            return {"mensagem": "Avaliação deletada com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}     
     
 
     def associar_ator_com_serie(self, ator_id, idserie):
@@ -142,6 +219,83 @@ class Series_service:
         if erro:
             return {"error": erro}
         return resultados
+    
+
+    def atualizar_serie(self, dados):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+            query = """
+                UPDATE serie
+                SET titulo = %s, descricao = %s, ano_lancamento = %s, nome_categoria = %s, id_ator = %s
+                WHERE id_serie = %s
+            """
+            valores = (dados.titulo, dados.descricao, dados.ano_lancamento, dados.nome_categoria, dados.id_ator, dados.idserie)
+            cursor.execute(query, valores)
+            conn.commit()
+            cursor.close()
+            self.db.desconectar()
+            return {"mensagem": "Série atualizada com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+
+    def atualizar_ator(self, dados):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+            query = "UPDATE ator SET nome = %s WHERE id_ator = %s"
+            cursor.execute(query, (dados.nome, dados.id_ator))
+            conn.commit()
+            cursor.close()
+            self.db.desconectar()
+            return {"mensagem": "Ator atualizado com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+
+    def atualizar_categoria(self, dados):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+            query = "UPDATE categoria SET nome_categoria = %s WHERE id_categoria = %s"
+            cursor.execute(query, (dados.nome_categoria, dados.id_categoria))
+            conn.commit()
+            cursor.close()
+            self.db.desconectar()
+            return {"mensagem": "Categoria atualizada com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+
+    def atualizar_motivo(self, dados):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+            query = "UPDATE motivo_para_assistir SET motivo = %s, serie_id = %s WHERE id_motivo = %s"
+            cursor.execute(query, (dados.motivo, dados.serie_id, dados.id_motivo))
+            conn.commit()
+            cursor.close()
+            self.db.desconectar()
+            return {"mensagem": "Motivo atualizado com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+
+    def atualizar_avaliacao(self, dados):
+        try:
+            conn = self.db.conectar()
+            cursor = conn.cursor()
+            query = """
+                UPDATE avaliacao
+                SET serie_id = %s, usuario_id = %s, nota = %s, comentario = %s
+                WHERE id_avaliacao = %s
+            """
+            valores = (dados.serie_id, dados.usuario_id, dados.nota, dados.comentario, dados.id_avaliacao)
+            cursor.execute(query, valores)
+            conn.commit()
+            cursor.close()
+            self.db.desconectar()
+            return {"mensagem": "Avaliação atualizada com sucesso"}
+        except Exception as e:
+            return {"erro": str(e)}
+
 
 
 
