@@ -1,151 +1,84 @@
 from fastapi import APIRouter
-from database import Database
+from series_service import Series_service
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/series")
+repo = Series_service()
 
-# Cadastro de séries
+
+
+class SerieRequest(BaseModel):
+    titulo: str
+    descricao: str
+    ano_lancamento: int
+    nome_categoria: str
+    idautor: int
+
+@router.post("/")
+def criar_serie(serie: SerieRequest):
+    return repo.criar_serie(
+        serie.titulo,
+        serie.descricao,
+        serie.ano_lancamento,
+        serie.nome_categoria,
+        serie.idautor
+    )
+
+
+@router.delete("/{idserie}")
+def deletar_serie(idserie: int):
+    return repo.deletar_serie(idserie)
+
+
 @router.get("/")
 def listar_series():
-    db = Database()
-    conn = db.conectar()
+    resultado, erro = repo.executar_select("SELECT * FROM serie")
+    return erro if erro else resultado
 
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
-    
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM serie")
-    series = cursor.fetchall()
-
-    cursor.close()
-    db.desconectar()
-
-    return series
-
-# Cadastro de atores
-@router.post("/atores/")
-def cadastrar_ator(nome: str):
-    db = Database()
-    conn = db.conectar()
-
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
-
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO ator (nome) VALUES (%s)", (nome,))
-    conn.commit()
-    novo_id = cursor.lastrowid
-
-    cursor.close()
-    db.desconectar()
-
-    return {"id": novo_id, "mensagem": "Ator cadastrado com sucesso"}
-
-# Listagem de atores
 @router.get("/atores/")
 def listar_atores():
-    db = Database()
-    conn = db.conectar()
+    resultado, erro = repo.executar_select("SELECT * FROM ator")
+    return erro if erro else resultado
 
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
+@router.post("/atores/")
+def cadastrar_ator(nome: str):
+    novo_id, erro = repo.executar_insert("INSERT INTO ator (nome) VALUES (%s)", (nome,))
+    return erro if erro else {"id": novo_id, "mensagem": "Ator cadastrado com sucesso"}
 
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM ator")
-    atores = cursor.fetchall()
+class AssociarAtorRequest(BaseModel):
+    ator_id: int
+    idserie: int
 
-    cursor.close()
-    db.desconectar()
+@router.post("/associar-ator/")
+def associar_ator(request: AssociarAtorRequest):
+    return repo.associar_ator_com_serie(request.ator_id, request.idserie)
 
-    return atores
 
-# Associação de atores a uma série
-@router.post("/associar_ator/")
-def associar_ator_com_serie(serie_id: int, ator_id: int):
-    db = Database()
-    conn = db.conectar()
+@router.delete("/autor/{idautor}")
+def deletar_autor(idautor: int):
+    return repo.deletar_autor(idautor)
 
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
 
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO ator_serie (id_serie, ator_id) VALUES (%s, %s)", (serie_id, ator_id))
-    conn.commit()
 
-    cursor.close()
-    db.desconectar()
-
-    return {"mensagem": "Ator associado com sucesso à série"}
-
-# Cadastro de categorias
 @router.post("/categorias/")
 def cadastrar_categoria(nome: str):
-    db = Database()
-    conn = db.conectar()
+    novo_id, erro = repo.executar_insert("INSERT INTO categoria (nome_categoria) VALUES (%s)", (nome,))
+    return erro if erro else {"id": novo_id, "mensagem": "Categoria cadastrada com sucesso"}
 
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
+@router.delete("/categoria/{idcategoria}")
+def deletar_categoria(idcategoria: int):
+    return repo.deletar_categoria(idcategoria)
 
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO categoria (nome_categoria) VALUES (%s)", (nome,))
-    conn.commit()
-    novo_id = cursor.lastrowid
-
-    cursor.close()
-    db.desconectar()
-
-    return {"id": novo_id, "mensagem": "Categoria cadastrada com sucesso"}
-
-# Listagem de categorias
 @router.get("/categorias/")
 def listar_categorias():
-    db = Database()
-    conn = db.conectar()
+    resultado, erro = repo.executar_select("SELECT * FROM categoria")
+    return erro if erro else resultado
 
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
-
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM categoria")
-    categorias = cursor.fetchall()
-
-    cursor.close()
-    db.desconectar()
-
-    return categorias
-
-# Cadastro de motivos para assistir
 @router.post("/motivos/")
 def cadastrar_motivo_para_assistir(serie_id: int, motivo: str):
-    db = Database()
-    conn = db.conectar()
+    return repo.executar_sql("INSERT INTO motivo_para_assistir (serie_id, motivo) VALUES (%s, %s)", (serie_id, motivo))
 
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
-
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO motivo_para_assistir (serie_id, motivo) VALUES (%s, %s)", (serie_id, motivo))
-    conn.commit()
-
-    cursor.close()
-    db.desconectar()
-
-    return {"mensagem": "Motivo para assistir registrado com sucesso"}
-
-# Cadastro de avaliação de séries
 @router.post("/avaliacoes/")
 def avaliar_serie(serie_id: int, usuario_id: int, nota: int, comentario: str):
-    db = Database()
-    conn = db.conectar()
-
-    if not conn:
-        return {"error": "Não foi possível conectar ao banco de dados."}
-
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO avaliacao (serie_id, usuario_id, nota, comentario) VALUES (%s, %s, %s, %s)", 
-                   (serie_id, usuario_id, nota, comentario))
-    conn.commit()
-
-    cursor.close()
-    db.desconectar()
-
-    return {"mensagem": "Avaliação registrada com sucesso"}
+    return repo.executar_sql("INSERT INTO avaliacao (serie_id, usuario_id, nota, comentario) VALUES (%s, %s, %s, %s)",
+                             (serie_id, usuario_id, nota, comentario))
