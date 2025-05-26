@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter
 from series_service import Series_service
 from pydantic import BaseModel
 from schemas import SerieUpdate
