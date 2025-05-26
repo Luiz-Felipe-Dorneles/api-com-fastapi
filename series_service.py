@@ -108,7 +108,7 @@ class Series_service:
             conn = self.db.conectar()
             cursor = conn.cursor()
 
-            query = "DELETE FROM serie WHERE idserie = %s"
+            query = "DELETE FROM serie WHERE id_serie = %s"
             cursor.execute(query, (id_serie,))
             conn.commit()
 
